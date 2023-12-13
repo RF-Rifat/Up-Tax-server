@@ -6,6 +6,7 @@ require("dotenv").config();
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
+
 const app = express();
 
 app.use(
@@ -64,6 +65,10 @@ async function run() {
         homeTax: 0,
         businessTax: 0,
         business: 0,
+        totalHomeAssessmentTax: 0,
+        totalBusinessAssessmentTax: 0,
+        totalHomePaidTax:0,
+        totalBusinessPaidTax:0,
       };
       try {
         totalCount.house = await houseHolderCollection.estimatedDocumentCount();
@@ -72,10 +77,59 @@ async function run() {
 
         totalCount.villages = await villagesCollection.estimatedDocumentCount();
 
-        totalCount.homeTax = await homeTaxCollection.estimatedDocumentCount();
+        // totalCount.homeTax = await homeTaxCollection.estimatedDocumentCount();
 
         totalCount.businessTax =
           await businessTaxCollection.estimatedDocumentCount();
+
+        //tax count
+
+        // home assessment total
+        const homeAssessmentTaxDoc = await houseHolderCollection
+          .find({}, { projection: { tax_based_on_assessment: 1, _id: 0 } })
+          .toArray();
+
+        const homeAssessmentSum = homeAssessmentTaxDoc.reduce(
+          (accumulator, doc) =>
+            accumulator + Number(doc.tax_based_on_assessment),
+          0
+        );
+        totalCount.totalHomeAssessmentTax = homeAssessmentSum;
+
+        // home tax paid total
+
+        const homePaidTaxDoc = await homeTaxCollection
+          .find({}, { projection: { amount: 1, _id: 0 } })
+          .toArray();
+
+        const homePaidSum = homePaidTaxDoc.reduce(
+          (accumulator, doc) => accumulator + Number(doc.amount),
+          0
+        );
+        totalCount.totalHomePaidTax = homePaidSum;
+
+        //total business Assessment tax
+        const businessAssessmentTaxDoc = await businessCollection
+          .find({}, { projection: { assesment_tax: 1, _id: 0 } })
+          .toArray();
+
+        const businessAssessmentSum = businessAssessmentTaxDoc.reduce(
+          (accumulator, doc) => accumulator + Number(doc.assesment_tax),
+          0
+        );
+        totalCount.totalBusinessAssessmentTax = businessAssessmentSum;
+
+        // Business tax paid total
+
+        const businessPaidTaxDoc = await homeTaxCollection
+          .find({}, { projection: { amount: 1, _id: 0 } })
+          .toArray();
+
+        const businessPaidSum = businessPaidTaxDoc.reduce(
+          (accumulator, doc) => accumulator + Number(doc.amount),
+          0
+        );
+        totalCount.totalBusinessPaidTax = businessPaidSum;
 
         res.send(totalCount);
       } catch (error) {
@@ -83,6 +137,8 @@ async function run() {
         res.status(500).send("There was a server side error!!");
       }
     });
+
+
 
     // get all documents data  from a collection based on types and paginated value
     // [house, business, villages, user, homeTax, businessTax]
