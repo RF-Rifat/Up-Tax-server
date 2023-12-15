@@ -6,19 +6,9 @@ require("dotenv").config();
 
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "https://kholahati.uphtax.com",
-      "http://localhost:5173",
-      "http://localhost:5174",
-    ],
-    credentials: true,
-  })
-);
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
@@ -39,7 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const villagesCollection = client.db("unionCouncil").collection("villages");
     const taxCollection = client.db("unionCouncil").collection("tax");
@@ -67,8 +57,8 @@ async function run() {
         business: 0,
         totalHomeAssessmentTax: 0,
         totalBusinessAssessmentTax: 0,
-        totalHomePaidTax:0,
-        totalBusinessPaidTax:0,
+        totalHomePaidTax: 0,
+        totalBusinessPaidTax: 0,
       };
       try {
         totalCount.house = await houseHolderCollection.estimatedDocumentCount();
@@ -137,8 +127,6 @@ async function run() {
         res.status(500).send("There was a server side error!!");
       }
     });
-
-
 
     // get all documents data  from a collection based on types and paginated value
     // [house, business, villages, user, homeTax, businessTax]
