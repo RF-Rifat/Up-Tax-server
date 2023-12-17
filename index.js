@@ -59,6 +59,7 @@ async function run() {
         totalBusinessAssessmentTax: 0,
         totalHomePaidTax: 0,
         totalBusinessPaidTax: 0,
+        todayPayment: 0,
       };
       try {
         totalCount.house = await houseHolderCollection.estimatedDocumentCount();
@@ -87,11 +88,10 @@ async function run() {
         totalCount.totalHomeAssessmentTax = homeAssessmentSum;
 
         // home tax paid total
-          // const query = {type}
+        // const query = {type}
         const homePaidTaxDoc = await taxCollection
           .find(
-            
-            { type:"household" },
+            { type: "household" },
             // {_id:new ObjectId('657bd00e268523a156f498f6')},
             { projection: { amount: 1, _id: 0 } }
           )
@@ -116,11 +116,7 @@ async function run() {
         // Business tax paid total
 
         const businessPaidTaxDoc = await taxCollection
-          .find(
-            
-            { type: "business" },
-            { projection: { amount: 1, _id: 0 } }
-          )
+          .find({ type: "business" }, { projection: { amount: 1, _id: 0 } })
           .toArray();
 
         const businessPaidSum = businessPaidTaxDoc.reduce(
@@ -128,6 +124,28 @@ async function run() {
           0
         );
         totalCount.totalBusinessPaidTax = businessPaidSum;
+
+        // Today's Payment
+        const today = new Date();
+        const formattedToday = today.toDateString();
+
+        // Get today's total pay
+        const todayTotalPayDoc = await taxCollection
+          .find(
+            { PaymentDate: formattedToday },
+            { projection: { amount: 1, type: 1, _id: 0 } }
+          )
+          .toArray();
+
+        totalCount.todayPayment = todayTotalPayDoc.reduce(
+          (accumulator, doc) => {
+            if (doc.type === "business" || doc.type === "household") {
+              return accumulator + Number(doc.amount);
+            }
+            return accumulator;
+          },
+          0
+        );
 
         res.send(totalCount);
       } catch (error) {
@@ -141,7 +159,7 @@ async function run() {
     app.get("/collection/:type", async (req, res) => {
       try {
         const page = parseInt(req.query.page) || 0;
-        const size = parseInt(req.query.size) || 10;
+        const size = parseInt(req.query.size);
         const type = req.params.type;
 
         // console.log("page:", page, "size: ", size);
@@ -196,7 +214,6 @@ async function run() {
     });
 
 
-
     // get single documents data  from a collection based on types and paginated value
     // [house, business, villages, user, homeTax, businessTax]
     app.get("/collection/:type/:id", async (req, res) => {
@@ -230,6 +247,27 @@ async function run() {
       } catch (error) {
         console.log(error);
         res.send(error);
+      }
+    });
+
+    // total page count
+    app.get("/pageCount", async (req, res) => {
+      try {
+        let pageCount = {
+          houseHolderCount: 0,
+          businessCount: 0,
+          villagesCount: 0,
+        };
+        const houseCount = await houseHolderCollection.estimatedDocumentCount();
+        const businessCount = await businessCollection.estimatedDocumentCount();
+        const villagesCount = await villagesCollection.estimatedDocumentCount();
+        pageCount.houseHolderCount = houseCount;
+        pageCount.businessCount = businessCount;
+        pageCount.villagesCount = villagesCount;
+
+        res.send(pageCount);
+      } catch (error) {
+        console.log(error);
       }
     });
 
