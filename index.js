@@ -162,12 +162,34 @@ async function run() {
         const size = parseInt(req.query.size);
         const type = req.params.type;
 
+        const { field, search } = req.query;
+        const searchQuery = {};
+        console.log(search);
+        if (search && field) {
+          const searchRegex = new RegExp(req.query.search, "i");
+
+          const searchField = [
+            "holding_number",
+            "national_id",
+            "head_of_household_mobile",
+            "head_of_household_name",
+            "father_or_husband_name",
+            "word",
+          ];
+
+          searchField.forEach((f) => {
+            if (f === field) {
+              searchQuery[f] = searchRegex;
+            }
+          });
+        }
+
         // console.log("page:", page, "size: ", size);
         let result;
 
         if (type.toLowerCase().trim() === "house") {
           result = await houseHolderCollection
-            .find()
+            .find(searchQuery)
             .skip(page * size)
             .limit(size)
             .toArray();
@@ -212,7 +234,6 @@ async function run() {
         res.send(error);
       }
     });
-
 
     // get single documents data  from a collection based on types and paginated value
     // [house, business, villages, user, homeTax, businessTax]
