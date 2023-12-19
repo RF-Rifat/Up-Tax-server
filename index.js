@@ -164,7 +164,6 @@ async function run() {
 
         const { field, search } = req.query;
         const searchQuery = {};
-        console.log(search);
         if (search && field) {
           const searchRegex = new RegExp(req.query.search, "i");
 
@@ -182,6 +181,17 @@ async function run() {
               searchQuery[f] = searchRegex;
             }
           });
+
+          // "business" collection
+          if (type.toLowerCase() === "business") {
+            const businessSearchField = ["shop_no", "owner_name", "phone"];
+
+            businessSearchField.forEach((f) => {
+              if (f === field) {
+                searchQuery[f] = searchRegex;
+              }
+            });
+          }
         }
 
         // console.log("page:", page, "size: ", size);
@@ -195,7 +205,7 @@ async function run() {
             .toArray();
         } else if (type.toLowerCase().trim() === "business") {
           result = await businessCollection
-            .find()
+            .find(searchQuery)
             .skip(page * size)
             .limit(size)
             .toArray();
