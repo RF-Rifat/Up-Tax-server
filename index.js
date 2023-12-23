@@ -194,7 +194,6 @@ async function run() {
           }
         }
 
-        // console.log("page:", page, "size: ", size);
         let result;
 
         if (type.toLowerCase().trim() === "house") {
