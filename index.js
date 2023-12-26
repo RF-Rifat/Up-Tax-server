@@ -199,24 +199,28 @@ async function run() {
         if (type.toLowerCase().trim() === "house") {
           result = await houseHolderCollection
             .find(searchQuery)
+            .sort({ _id: -1 })
             .skip(page * size)
             .limit(size)
             .toArray();
         } else if (type.toLowerCase().trim() === "business") {
           result = await businessCollection
             .find(searchQuery)
+            .sort({ _id: -1 })
             .skip(page * size)
             .limit(size)
             .toArray();
         } else if (type.toLowerCase().trim() === "villages") {
           result = await villagesCollection
             .find()
+            .sort({ _id: -1 })
             .skip(page * size)
             .limit(size)
             .toArray();
         } else if (type.toLowerCase().trim() === "users") {
           result = await usersCollection
             .find()
+            .sort({ _id: -1 })
             .skip(page * size)
             .limit(size)
             .toArray();
@@ -225,12 +229,14 @@ async function run() {
         else if (type.toLowerCase().trim() === "tax") {
           result = await taxCollection
             .find()
+            .sort({ _id: -1 })
             .skip(page * size)
             .limit(size)
             .toArray();
         } else if (type.toLowerCase().trim() === "settings") {
           result = await settingsCollection
             .find()
+            .sort({ _id: -1 })
             .skip(page * size)
             .limit(size)
             .toArray();
