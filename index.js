@@ -14,7 +14,8 @@ app.use(cookieParser());
 
 const port = process.env.PORT || 5000;
 
-const uri = `mongodb+srv://up-tax:${process.env.DB_PASS}@cluster0.8n7d0sc.mongodb.net/?retryWrites=true&w=majority`;
+// const uri = `mongodb+srv://up-tax:${process.env.DB_PASS}@cluster0.8n7d0sc.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://up-tax:${process.env.DB_PASS}@cluster0.74fodfg.mongodb.net/?retryWrites=true&w=majority`;
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
   serverApi: {
@@ -293,13 +294,16 @@ async function run() {
           houseHolderCount: 0,
           businessCount: 0,
           villagesCount: 0,
+          taxCount: 0,
         };
         const houseCount = await houseHolderCollection.estimatedDocumentCount();
         const businessCount = await businessCollection.estimatedDocumentCount();
         const villagesCount = await villagesCollection.estimatedDocumentCount();
+        const taxCount = await taxCollection.estimatedDocumentCount();
         pageCount.houseHolderCount = houseCount;
         pageCount.businessCount = businessCount;
         pageCount.villagesCount = villagesCount;
+        pageCount.taxCount = taxCount;
 
         res.send(pageCount);
       } catch (error) {
@@ -456,6 +460,19 @@ async function run() {
       }
     });
 
+
+    //delete All Method
+    // app.delete("/collection/house", async (req, res) => {
+    //   try {
+    //     const result = await houseHolderCollection.deleteMany({});
+    //     res.send(`Deleted ${result.deletedCount} documents from the collection`);
+    //   } catch (error) {
+    //     console.error(error);
+    //     res.status(500).send("Internal Server Error");
+    //   }
+    // });
+
+    
     // Send a ping to confirm a successful connection
     await client.db("users").command({ ping: 1 });
     console.log(
@@ -471,6 +488,7 @@ run().catch(console.dir);
 app.get("/", (req, res) => {
   res.send("Server Running...");
 });
+
 
 app.listen(port, () => {
   console.log("Server Running on port", port);
