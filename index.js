@@ -159,16 +159,21 @@ async function run() {
     // [house, business, villages, user, homeTax, businessTax]
     app.get("/collection/:type", async (req, res) => {
       try {
-        const page = parseInt(req.query.page) || 0;
+        const page = parseInt(req.query.page);
         const size = parseInt(req.query.size);
         const type = req.params.type;
+        console.log("Type:", type);
+        console.log("Page:", page);
+        console.log("Size:", size);
 
         const { field, search } = req.query;
         const searchQuery = {};
-        if (search && field) {
-          const searchRegex = new RegExp(req.query.search, "i");
 
-          const searchField = [
+        if (search && field) {
+          const searchRegex = new RegExp(`^${search}$`, "i");
+
+          // "person" collection
+          const personSearchField = [
             "holding_number",
             "national_id",
             "head_of_household_mobile",
@@ -177,21 +182,17 @@ async function run() {
             "word",
           ];
 
-          searchField.forEach((f) => {
-            if (f === field) {
-              searchQuery[f] = searchRegex;
-            }
-          });
+          if (personSearchField.includes(field)) {
+            searchQuery[field] = searchRegex;
+          }
 
           // "business" collection
           if (type.toLowerCase() === "business") {
             const businessSearchField = ["shop_no", "owner_name", "phone"];
 
-            businessSearchField.forEach((f) => {
-              if (f === field) {
-                searchQuery[f] = searchRegex;
-              }
-            });
+            if (businessSearchField.includes(field)) {
+              searchQuery[field] = searchRegex;
+            }
           }
         }
 
@@ -243,7 +244,6 @@ async function run() {
             .toArray();
         }
 
-        // res.send(result);
         res.send(result);
       } catch (error) {
         console.log(error);
@@ -460,7 +460,6 @@ async function run() {
       }
     });
 
-
     //delete All Method
     // app.delete("/collection/house", async (req, res) => {
     //   try {
@@ -472,7 +471,6 @@ async function run() {
     //   }
     // });
 
-    
     // Send a ping to confirm a successful connection
     await client.db("users").command({ ping: 1 });
     console.log(
@@ -489,7 +487,70 @@ app.get("/", (req, res) => {
   res.send("Server Running...");
 });
 
-
 app.listen(port, () => {
   console.log("Server Running on port", port);
 });
+
+
+
+
+/* 
+  if (err) {
+    console.error('Error connecting to the database:', err);
+    return;
+  }
+
+  const db = client.db(dbName);
+  const collection = db.collection(collectionName);
+
+  // Define the aggregation pipeline
+  const pipeline = [
+    {
+      $match: {
+        head_of_household_mobile: phoneNumber,
+      },
+    },
+    {
+      $lookup: {
+        from: 'tax',
+        localField: 'head_of_household_mobile',
+        foreignField: 'phone',
+        as: 'amount',
+      },
+    },
+    {
+      $replaceRoot: { newRoot: { $mergeObjects: [{ $arrayElemAt: ['$amount', 0] }, '$$ROOT'] } },
+    },
+    {
+      $project: { amount: 0 },
+    },
+  ];
+
+  // Execute the aggregation pipeline
+  const result = await collection.aggregate(pipeline).toArray();
+
+  // Log the result
+  console.log(result)
+ */
+
+
+  /* [{
+    $match: {
+      head_of_household_mobile: "01725126401"
+    }
+  },
+  {
+    $lookup: {
+      from: "tax",
+      localField: "head_of_household_mobile",
+      foreignField: "phone",
+      as: "amount"
+    }
+  },
+  {
+    $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$amount", 0 ] }, "$$ROOT" ] } }
+  },
+  {
+    $project: { amount: 0 } 
+  }
+] */
