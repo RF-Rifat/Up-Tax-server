@@ -162,9 +162,6 @@ async function run() {
         const page = parseInt(req.query.page);
         const size = parseInt(req.query.size);
         const type = req.params.type;
-        console.log("Type:", type);
-        console.log("Page:", page);
-        console.log("Size:", size);
 
         const { field, search } = req.query;
         const searchQuery = {};
@@ -260,11 +257,15 @@ async function run() {
         let result = {};
 
         const query = { _id: new ObjectId(id) };
+        const taxQuery = { uniqId: id };
+        const taxInfo = await taxCollection.findOne(taxQuery);
 
         if (type.toLowerCase().trim() === "house") {
-          result = await houseHolderCollection.findOne(query);
+          const houseHold = await houseHolderCollection.findOne(query);
+          result = { ...houseHold, ...taxInfo };
         } else if (type.toLowerCase().trim() === "business") {
-          result = await businessCollection.findOne(query);
+          const business = await businessCollection.findOne(query);
+          result = { ...business, ...taxInfo };
         } else if (type.toLowerCase().trim() === "villages") {
           result = await villagesCollection.findOne(query);
         } else if (type.toLowerCase().trim() === "users") {
@@ -280,6 +281,7 @@ async function run() {
         } else if (type.toLowerCase().trim() === "settings") {
           result = await settingsCollection.findOne(query);
         }
+        console.log(result);
         res.send(result);
       } catch (error) {
         console.log(error);
@@ -411,10 +413,7 @@ async function run() {
           result = await villagesCollection.updateOne(filter, newDoc, option);
         } else if (type.toLowerCase().trim() === "users") {
           result = await usersCollection.updateOne(filter, newDoc, option);
-        }
-
-        ////
-        else if (type.toLowerCase().trim() === "tax") {
+        } else if (type.toLowerCase().trim() === "tax") {
           result = await taxCollection.updateOne(filter, newDoc, option);
         } else if (type.toLowerCase().trim() === "settings") {
           result = await settingsCollection.updateOne(filter, newDoc, option);
@@ -491,9 +490,6 @@ app.listen(port, () => {
   console.log("Server Running on port", port);
 });
 
-
-
-
 /* 
   if (err) {
     console.error('Error connecting to the database:', err);
@@ -533,24 +529,24 @@ app.listen(port, () => {
   console.log(result)
  */
 
-
-  /* [{
+/* [
+  {
     $match: {
-      head_of_household_mobile: "01725126401"
+      _id: ObjectId("6599644a1dbf53265331165f")
     }
   },
   {
     $lookup: {
       from: "tax",
-      localField: "head_of_household_mobile",
-      foreignField: "phone",
-      as: "amount"
+      localField: "holding_number", 
+      foreignField: "code",
+      as: "taxInfo"
     }
   },
   {
-    $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$amount", 0 ] }, "$$ROOT" ] } }
+    $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$taxInfo", 0 ] }, "$$ROOT" ] } }
   },
   {
-    $project: { amount: 0 } 
+    $project: { taxInfo: 0 } 
   }
 ] */
