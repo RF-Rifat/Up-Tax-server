@@ -459,17 +459,6 @@ async function run() {
       }
     });
 
-    //delete All Method
-    // app.delete("/collection/house", async (req, res) => {
-    //   try {
-    //     const result = await houseHolderCollection.deleteMany({});
-    //     res.send(`Deleted ${result.deletedCount} documents from the collection`);
-    //   } catch (error) {
-    //     console.error(error);
-    //     res.status(500).send("Internal Server Error");
-    //   }
-    // });
-
     // Send a ping to confirm a successful connection
     await client.db("users").command({ ping: 1 });
     console.log(
