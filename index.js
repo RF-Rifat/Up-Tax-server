@@ -258,14 +258,14 @@ async function run() {
 
         const query = { _id: new ObjectId(id) };
         const taxQuery = { uniqId: id };
-        const taxInfo = await taxCollection.findOne(taxQuery);
+        const taxInfo = await taxCollection.find(taxQuery).toArray();
 
         if (type.toLowerCase().trim() === "house") {
           const houseHold = await houseHolderCollection.findOne(query);
-          result = { ...houseHold, ...taxInfo };
+          result = { ...houseHold, taxInfo };
         } else if (type.toLowerCase().trim() === "business") {
           const business = await businessCollection.findOne(query);
-          result = { ...business, ...taxInfo };
+          result = { ...business, taxInfo };
         } else if (type.toLowerCase().trim() === "villages") {
           result = await villagesCollection.findOne(query);
         } else if (type.toLowerCase().trim() === "users") {
@@ -281,7 +281,7 @@ async function run() {
         } else if (type.toLowerCase().trim() === "settings") {
           result = await settingsCollection.findOne(query);
         }
-        console.log(result);
+
         res.send(result);
       } catch (error) {
         console.log(error);
@@ -490,63 +490,3 @@ app.listen(port, () => {
   console.log("Server Running on port", port);
 });
 
-/* 
-  if (err) {
-    console.error('Error connecting to the database:', err);
-    return;
-  }
-
-  const db = client.db(dbName);
-  const collection = db.collection(collectionName);
-
-  // Define the aggregation pipeline
-  const pipeline = [
-    {
-      $match: {
-        head_of_household_mobile: phoneNumber,
-      },
-    },
-    {
-      $lookup: {
-        from: 'tax',
-        localField: 'head_of_household_mobile',
-        foreignField: 'phone',
-        as: 'amount',
-      },
-    },
-    {
-      $replaceRoot: { newRoot: { $mergeObjects: [{ $arrayElemAt: ['$amount', 0] }, '$$ROOT'] } },
-    },
-    {
-      $project: { amount: 0 },
-    },
-  ];
-
-  // Execute the aggregation pipeline
-  const result = await collection.aggregate(pipeline).toArray();
-
-  // Log the result
-  console.log(result)
- */
-
-/* [
-  {
-    $match: {
-      _id: ObjectId("6599644a1dbf53265331165f")
-    }
-  },
-  {
-    $lookup: {
-      from: "tax",
-      localField: "holding_number", 
-      foreignField: "code",
-      as: "taxInfo"
-    }
-  },
-  {
-    $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$taxInfo", 0 ] }, "$$ROOT" ] } }
-  },
-  {
-    $project: { taxInfo: 0 } 
-  }
-] */
